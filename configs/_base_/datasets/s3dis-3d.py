@@ -18,6 +18,9 @@ data_root = 'data/s3dis/'
 backend_args = None
 
 metainfo = dict(classes=('table', 'chair', 'sofa', 'bookcase', 'board'))
+
+# 我们通过将多个相应路径构成的列表 (list) 输入 ann_files 和 scene_idxs 以实现训练测试集的划分。 
+# 如果修改训练测试区域的划分，只需要简单修改 train_area 和 test_area 即可。
 train_area = [1, 2, 3, 4, 6]
 test_area = 5
 
@@ -38,7 +41,7 @@ train_pipeline = [
         flip_ratio_bev_horizontal=0.5,
         flip_ratio_bev_vertical=0.5),
     dict(
-        type='GlobalRotScaleTrans',
+        type='GlobalRotScaleTrans',         # 对输入点云进行随机旋转和放缩变换。
         rot_range=[-0.087266, 0.087266],
         scale_ratio_range=[0.9, 1.1],
         translation_std=[.1, .1, .1],

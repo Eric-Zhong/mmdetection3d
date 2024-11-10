@@ -1,5 +1,7 @@
+# 默认作用域，组件先从 /mmdet3d 下进行搜索加载
 default_scope = 'mmdet3d'
 
+# 默认执行的钩子
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=50),

@@ -67,6 +67,7 @@ def parse_args():
 
 
 def main():
+    # sourcery skip: assign-if-exp, hoist-similar-statement-from-if, swap-if-else-branches, swap-nested-ifs
     args = parse_args()
 
     # load config

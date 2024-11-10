@@ -153,7 +153,7 @@ class Det3DVisualizationHook(Hook):
                 show=self.show,
                 vis_task=self.vis_task,
                 wait_time=self.wait_time,
-                pred_score_thr=self.score_thr,
+                # pred_score_thr=self.score_thr,
                 step=total_curr_iter,
                 show_pcd_rgb=self.show_pcd_rgb)
 

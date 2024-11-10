@@ -28,11 +28,10 @@ def export_one_scan(scan_name,
                     label_map_file,
                     scannet_dir,
                     test_mode=False):
-    mesh_file = osp.join(scannet_dir, scan_name, scan_name + '_vh_clean_2.ply')
-    agg_file = osp.join(scannet_dir, scan_name,
-                        scan_name + '.aggregation.json')
-    seg_file = osp.join(scannet_dir, scan_name,
-                        scan_name + '_vh_clean_2.0.010000.segs.json')
+    mesh_file = osp.join(scannet_dir, scan_name, f'{scan_name}_vh_clean_2.ply')
+    agg_file = osp.join(scannet_dir, scan_name, f'{scan_name}.aggregation.json')
+    seg_file = osp.join(scannet_dir, scan_name, f'{scan_name}_vh_clean_2.0.010000.segs.json'
+    )
     # includes axisAlignment info for the train set scans.
     meta_file = osp.join(scannet_dir, scan_name, f'{scan_name}.txt')
     mesh_vertices, semantic_labels, instance_labels, unaligned_bboxes, \
@@ -137,6 +136,7 @@ def main():
         default='meta_data/scannetv2_test.txt',
         help='The path of the file that stores the scan names.')
     args = parser.parse_args()
+
     batch_export(
         args.max_num_point,
         args.output_folder,
@@ -144,6 +144,7 @@ def main():
         args.label_map_file,
         args.train_scannet_dir,
         test_mode=False)
+
     batch_export(
         args.max_num_point,
         args.output_folder,

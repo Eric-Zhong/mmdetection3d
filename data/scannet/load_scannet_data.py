@@ -105,6 +105,7 @@ def export(mesh_file,
 
     # Load scene axis alignment matrix
     lines = open(meta_file).readlines()
+
     # test set data doesn't have align_matrix
     axis_align_matrix = np.eye(4)
     for line in lines:
@@ -180,15 +181,19 @@ def main():
     opt = parser.parse_args()
 
     scan_name = os.path.split(opt.scan_path)[-1]
-    mesh_file = os.path.join(opt.scan_path, scan_name + '_vh_clean_2.ply')
-    agg_file = os.path.join(opt.scan_path, scan_name + '.aggregation.json')
-    seg_file = os.path.join(opt.scan_path,
-                            scan_name + '_vh_clean_2.0.010000.segs.json')
-    meta_file = os.path.join(
-        opt.scan_path, scan_name +
-        '.txt')  # includes axisAlignment info for the train set scans.
-    export(mesh_file, agg_file, seg_file, meta_file, opt.label_map_file,
-           opt.output_file)
+    mesh_file = os.path.join(opt.scan_path, f'{scan_name}_vh_clean_2.ply')
+    agg_file = os.path.join(opt.scan_path, f'{scan_name}.aggregation.json')
+    seg_file = os.path.join(opt.scan_path, f'{scan_name}_vh_clean_2.0.010000.segs.json')
+    meta_file = os.path.join(opt.scan_path, f'{scan_name}.txt')  # includes axisAlignment info for the train set scans.
+    
+    export(
+        mesh_file, 
+        agg_file, 
+        seg_file, 
+        meta_file, 
+        opt.label_map_file,
+        opt.output_file
+    )
 
 
 if __name__ == '__main__':
