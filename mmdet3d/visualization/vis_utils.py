@@ -138,8 +138,7 @@ def proj_depth_bbox3d_to_img(bboxes_3d: DepthInstance3DBoxes,
         points_3d, 'DEPTH', input_meta, reverse=True)
 
     # project to 2d to get image coords (uv)
-    uv_origin = points_cam2img(xyz_depth,
-                               xyz_depth.new_tensor(input_meta['depth2img']))
+    uv_origin = points_cam2img(xyz_depth, xyz_depth.new_tensor(input_meta['depth2img']))
     uv_origin = (uv_origin - 1).round()
     imgfov_pts_2d = uv_origin[..., :2].reshape(num_bbox, 8, 2).numpy()
 

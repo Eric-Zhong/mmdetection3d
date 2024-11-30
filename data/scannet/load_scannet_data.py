@@ -98,11 +98,17 @@ def export(mesh_file,
         np.ndarray: Instance bboxes.
         dict: Map from object_id to label_id.
     """
-
+    # 标签映射文件：./data/scannet/meta_data/scannetv2-labels.combined.tsv
+    # 该标签映射文件中有多种标签标准，比如 'nyu40id'
     label_map = scannet_utils.read_label_mapping(
         label_map_file, label_from='raw_category', label_to='nyu40id')
+
+    # 加载原始点云数据，特征包括6维：XYZRGB
     mesh_vertices = scannet_utils.read_mesh_vertices_rgb(mesh_file)
 
+    # 加载场景坐标轴对齐矩阵：一个 4x4 的变换矩阵
+    # 将传感器坐标系下的原始点转化到另一个坐标系下
+    # 该坐标系与房屋的两边平行（也就是与坐标轴平行）
     # Load scene axis alignment matrix
     lines = open(meta_file).readlines()
 
@@ -117,16 +123,24 @@ def export(mesh_file,
             break
     axis_align_matrix = np.array(axis_align_matrix).reshape((4, 4))
 
+    # 对网格顶点进行全局的对齐
     # perform global alignment of mesh vertices
     pts = np.ones((mesh_vertices.shape[0], 4))
+
+    # 同种类坐标下的原始点云，每一行的数据是 [x, y, z, 1]
     pts[:, 0:3] = mesh_vertices[:, 0:3]
+
+    # 将原始网格顶点转换为对齐后的顶点
     pts = np.dot(pts, axis_align_matrix.transpose())  # Nx4
     aligned_mesh_vertices = np.concatenate([pts[:, 0:3], mesh_vertices[:, 3:]],
                                            axis=1)
 
+    # 加载语义与实例标签
     # Load semantic and instance labels
     if not test_mode:
+        # 每个物体都有一个语义标签，并且包含几个分割部分
         object_id_to_segs, label_to_segs = read_aggregation(agg_file)
+        # 很多点属于同一分割部分
         seg_to_verts, num_verts = read_segmentation(seg_file)
         label_ids = np.zeros(shape=(num_verts), dtype=np.uint32)
         object_id_to_label_id = {}
@@ -134,19 +148,28 @@ def export(mesh_file,
             label_id = label_map[label]
             for seg in segs:
                 verts = seg_to_verts[seg]
+                # 每个点都有一个语义标签
                 label_ids[verts] = label_id
         instance_ids = np.zeros(
             shape=(num_verts), dtype=np.uint32)  # 0: unannotated
         for object_id, segs in object_id_to_segs.items():
             for seg in segs:
                 verts = seg_to_verts[seg]
+                # object_id 从 1 开始计数，比如 1,2,3,.,,,.NUM_INSTANCES
+                # 每个点都属于一个物体
                 instance_ids[verts] = object_id
                 if object_id not in object_id_to_label_id:
                     object_id_to_label_id[object_id] = label_ids[verts][0]
+
+        # 包围框格式为 [x, y, z, dx, dy, dz, label_id]
+        # [x, y, z] 是包围框的重力中心, [dx, dy, dz] 是与坐标轴平行的
+        # [label_id] 是 'nyu40id' 标准下的语义标签
+        # 注意：因为三维包围框是与坐标轴平行的，所以旋转角是 0
         unaligned_bboxes = extract_bbox(mesh_vertices, object_id_to_segs,
                                         object_id_to_label_id, instance_ids)
         aligned_bboxes = extract_bbox(aligned_mesh_vertices, object_id_to_segs,
                                       object_id_to_label_id, instance_ids)
+
     else:
         label_ids = None
         instance_ids = None
@@ -155,13 +178,13 @@ def export(mesh_file,
         object_id_to_label_id = None
 
     if output_file is not None:
-        np.save(output_file + '_vert.npy', mesh_vertices)
+        np.save(f'{output_file}_vert.npy', mesh_vertices)
         if not test_mode:
-            np.save(output_file + '_sem_label.npy', label_ids)
-            np.save(output_file + '_ins_label.npy', instance_ids)
-            np.save(output_file + '_unaligned_bbox.npy', unaligned_bboxes)
-            np.save(output_file + '_aligned_bbox.npy', aligned_bboxes)
-            np.save(output_file + '_axis_align_matrix.npy', axis_align_matrix)
+            np.save(f'{output_file}_sem_label.npy', label_ids)
+            np.save(f'{output_file}_ins_label.npy', instance_ids)
+            np.save(f'{output_file}_unaligned_bbox.npy', unaligned_bboxes)
+            np.save(f'{output_file}_aligned_bbox.npy', aligned_bboxes)
+            np.save(f'{output_file}_axis_align_matrix.npy', axis_align_matrix)
 
     return mesh_vertices, label_ids, instance_ids, unaligned_bboxes, \
         aligned_bboxes, object_id_to_label_id, axis_align_matrix

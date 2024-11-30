@@ -314,7 +314,19 @@ class Det3DLocalVisualizer(DetLocalVisualizer):
 
             line_set = geometry.LineSet.create_from_oriented_bounding_box(
                 box3d)
-            line_set.paint_uniform_color(np.array(bbox_color[i]) / 255.)
+            
+            # xuzhong
+            # bug fix
+            # https://github.com/open-mmlab/mmdetection3d/issues/2942
+            # 
+            #line_set.paint_uniform_color(np.array(bbox_color[i]))
+            line_set.paint_uniform_color( np.array(bbox_color))     # remove "[i]"
+
+            # ----------- 注意这里 -----------------------------------
+            # 这里的坑太大，当 Demo 用 kitti 时，必须要有 [i]
+            # line_set.paint_uniform_color(np.array(bbox_color[i]))
+            # -------------------------------------------------------
+
             # draw bboxes on visualizer
             self.o3d_vis.add_geometry(line_set)
 
@@ -861,9 +873,16 @@ class Det3DLocalVisualizer(DetLocalVisualizer):
                     self.view_port)
             self.flag_exit = not self.o3d_vis.poll_events()
             self.o3d_vis.update_renderer()
+
+            # xuzhong
+            # bug fix
+            # not comment following code
+            ##############################################################
             # if not hasattr(self, 'view_control'):
             #     self.o3d_vis.create_window()
             #     self.view_control = self.o3d_vis.get_view_control()
+            ##############################################################
+
             self.view_port = \
                 self.view_control.convert_to_pinhole_camera_parameters()  # noqa: E501
             if wait_time != -1:

@@ -33,3 +33,22 @@ default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=5))
 
 # PointNet2-MSG needs longer training time than PointNet2-SSG
 train_cfg = dict(by_epoch=True, max_epochs=250, val_interval=5)
+
+# 可视化参数
+visualizer = dict(
+    # 为可视化器指定一个名称，方便在多个可视化器实例存在时进行区分
+    name='visualizer',
+    # 指定可视化器的类型
+    type='Det3DLocalVisualizer',
+    # 定义了可视化结果的存储后端，可以同时指定多个后端
+    vis_backends=[
+        # 它主要通过接收由Visualizer传递过来的数据，
+        # 将其转换为可存储的图像格式，
+        # 然后保存到本地指定的目录中。
+        dict(
+            type='LocalVisBackend',
+            save_dir='C:/Users/zhong/git/mmdetection3d/outputs/cicc'
+        ),
+    ]
+)
+

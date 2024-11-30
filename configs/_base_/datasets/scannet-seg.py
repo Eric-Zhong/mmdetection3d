@@ -1,8 +1,18 @@
 # For ScanNet seg we usually do 20-class segmentation
-class_names = ('wall', 'floor', 'cabinet', 'bed', 'chair', 'sofa', 'table',
-               'door', 'window', 'bookshelf', 'picture', 'counter', 'desk',
-               'curtain', 'refrigerator', 'showercurtrain', 'toilet', 'sink',
-               'bathtub', 'otherfurniture')
+class_names = (
+'wall', 'floor', 'cabinet', 'bed', 'chair', 'sofa', 'table',
+'door', 'window', 'bookshelf', 'picture', 'counter', 'desk',
+'curtain', 'refrigerator', 'showercurtrain', 'toilet', 'sink',
+'bathtub', 'otherfurniture'
+)
+
+class_names_cn = (
+' 墙 ', ' 地板 ', ' 橱柜 ', ' 床 ', ' 椅子 ', ' 沙发 ', ' 桌子 ',
+' 门 ', ' 窗户 ', ' 书架 ', ' 图画 ', ' 柜台 ', ' 书桌 ',
+' 窗帘 ', ' 冰箱 ', ' 淋浴帘 ', ' 马桶 ', ' 水槽 ',
+' 浴缸 ', ' 其他家具 '
+)
+
 metainfo = dict(classes=class_names)
 dataset_type = 'ScanNetSegDataset'
 data_root = 'data/scannet/'
@@ -28,6 +38,7 @@ data_prefix = dict(
 backend_args = None
 
 num_points = 8192
+
 train_pipeline = [
     dict(
         type='LoadPointsFromFile',
@@ -56,6 +67,7 @@ train_pipeline = [
     dict(type='NormalizePointsColor', color_mean=None),
     dict(type='Pack3DDetInputs', keys=['points', 'pts_semantic_mask'])
 ]
+
 test_pipeline = [
     dict(
         type='LoadPointsFromFile',
@@ -90,14 +102,18 @@ eval_pipeline = [
     dict(type='NormalizePointsColor', color_mean=None),
     dict(type='Pack3DDetInputs', keys=['points'])
 ]
+
+# Test - Time Augmentation 测试时数据增强
+# 这种技术主要是在模型测试阶段，通过对测试数据进行一系列的数据增强操作（如翻转、旋转、缩放等），来增加测试样本的多样性，
+# 从而提高模型的鲁棒性和泛化能力，使得模型在测试阶段能够更准确地评估和预测结果。
 tta_pipeline = [
     dict(
         type='LoadPointsFromFile',
         coord_type='DEPTH',
         shift_height=False,
         use_color=True,
-        load_dim=6,
-        use_dim=[0, 1, 2, 3, 4, 5],
+        load_dim=6, # 如果有 6 个 dimension，{X, Y, Z, R, G, B, Depth}
+        use_dim=[0, 1, 2, 3, 4, 5], # 只使用 0 ~ 5 维度，{X, Y, Z, R, G, B}
         backend_args=backend_args),
     dict(
         type='LoadAnnotations3D',
@@ -151,14 +167,26 @@ test_dataloader = dict(
         modality=input_modality,
         ignore_index=len(class_names),
         test_mode=True,
-        backend_args=backend_args))
+        backend_args=backend_args,
+        # xuzhong add：开发用 mmdet3d.apis 加载模型时，缺这个 box_type_3d 参数
+        # xuzhong: 增加之后，运行 demo/pcd_seg_demo.py 会报错
+        # dataset=dict(
+        #     box_type_3d='LiDAR'
+        # )
+    )
+)
 val_dataloader = test_dataloader
 
 val_evaluator = dict(type='SegMetric')
 test_evaluator = val_evaluator
 
 vis_backends = [dict(type='LocalVisBackend')]
+
+# 可视化参数
 visualizer = dict(
-    type='Det3DLocalVisualizer', vis_backends=vis_backends, name='visualizer')
+    type='Det3DLocalVisualizer',    # 指定可视化器的类型，一般为Visualizer
+    vis_backends=vis_backends,      # 定义了可视化结果的存储后端，可以同时指定多个后端
+    name='visualizer'               # 为可视化器指定一个名称，方便在多个可视化器实例存在时进行区分
+)
 
 tta_model = dict(type='Seg3DTTAModel')
