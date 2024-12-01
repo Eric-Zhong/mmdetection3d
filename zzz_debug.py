@@ -95,8 +95,8 @@ pcd.colors = colors
 
 # 可选：如果 LAS 文件包含颜色信息，也可以设置颜色
 if hasattr(las, 'red'):
-    colors = np.vstack((las.red, las.green, las.blue)).transpose() / 65535  # 通常 LAS 的颜色值范围是 0-65535
-    print(colors[0])
+    # colors = np.vstack((las.red, las.green, las.blue)).transpose() / 65535  # 通常 LAS 的颜色值范围是 0-65535
+    # print(colors[0])
     pcd.colors = o3d.utility.Vector3dVector(colors)
 
 
